@@ -9,7 +9,15 @@ const UDSC_NEWS_URL = 'https://www.gov.pl/web/udsc/aktualnosci-udsc';
 export async function scrapeUdscNewsList(): Promise<UdscNewsItem[]> {
   const html = await fetchHtml(UDSC_NEWS_URL);
 
+  console.log('HTML length:', html.length);
+
   const items = parseUdscNewsList(html);
+
+  console.log('Parsed items count:', items.length);
+  console.log(
+    'First parsed items:',
+    JSON.stringify(items.slice(0, 5), null, 2),
+  );
 
   return items;
 }

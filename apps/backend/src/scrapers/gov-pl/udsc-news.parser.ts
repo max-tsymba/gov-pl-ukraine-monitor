@@ -2,9 +2,14 @@ import * as cheerio from 'cheerio';
 
 import { UdscNewsItem } from './udsc.types.js';
 
-import { buildAbsoluteUrl, normalizeText } from '../utils/helper.js';
+import GOV_PL_DOMAIN, {
+  UDSC_NEWS_DATE_SELECTOR,
+  UDSC_NEWS_ITEM_SELECTOR,
+  UDSC_NEWS_SUMMARY_SELECTOR,
+  UDSC_NEWS_TITLE_SELECTOR,
+} from '../constants/gov-pl.constants.js';
 
-const GOV_PL_DOMAIN = 'https://www.gov.pl';
+import { buildAbsoluteUrl, normalizeText } from '../utils/helper.js';
 
 // ============================ UDSC NEWS parser ============================
 
@@ -16,42 +21,41 @@ export function parseUdscNewsList(html: string): UdscNewsItem[] {
   //   for duplicates
   const seen = new Set<string>();
 
-  // ---------------- cheerio ------------------
-  const hrefTags = 'a[href*="/web/udsc/"]';
-  $(hrefTags).each((_, element) => {
-    const link = $(element);
-    const href = link.attr('href');
-    const title = normalizeText(link.text());
+  // ---------------- get items by selector and parse them  -----------------
+  const newsItems = $(UDSC_NEWS_ITEM_SELECTOR);
 
-    if (!href || !title) return;
+  newsItems.each((_, element) => {
+    const item = $(element);
 
+    // date
+    const dateElement = item.find(UDSC_NEWS_DATE_SELECTOR).first();
+    const date: string | null = normalizeText(dateElement.text()) || null;
+
+    // title
+    const titleElement = item.find(UDSC_NEWS_TITLE_SELECTOR).first();
+    const title: string | null = normalizeText(titleElement.text()) || null;
+
+    // link
+    const href = titleElement.attr('href');
+
+    // summary
+    const summaryElement = item.find(UDSC_NEWS_SUMMARY_SELECTOR).first();
+    const summary: string | null = normalizeText(summaryElement.text()) || null;
+
+    if (!title || !href) return;
+
+    // check for duplicates
     const url = buildAbsoluteUrl(GOV_PL_DOMAIN, href);
 
     if (seen.has(url)) return;
 
-    const cardText = normalizeText(link.parent().text());
-
-    // find date
-    const maybeDateMatch = cardText.match(/\b\d{2}\.\d{2}\.\d{4}\b/);
-    const date = maybeDateMatch ? maybeDateMatch[0] : null;
-
-    // find and build summary
-    let summary: string | null = null;
-
-    const parentText = normalizeText(link.parent().text());
-    const isExistParentText: boolean =
-      Boolean(parentText) && parentText !== title;
-
-    if (isExistParentText) {
-      const parentTextTrim = parentText
-        .replace(title, '')
-        .replace(date ?? '', '')
-        .trim();
-      summary = parentTextTrim || null;
-    }
-
-    // add to results
-    results.push({ date, title, url, summary });
+    // add results
+    results.push({
+      date,
+      title,
+      url,
+      summary,
+    });
 
     seen.add(url);
   });

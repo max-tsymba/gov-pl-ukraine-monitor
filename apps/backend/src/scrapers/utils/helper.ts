@@ -16,3 +16,10 @@ const buildAbsoluteUrl = (domain: string, href: string): string => {
   return `${domain}${href}`;
 };
 export { buildAbsoluteUrl };
+
+// @Function: check date ---------------------
+
+const isDate = (value: string): boolean => {
+  return /^\d{2}\.\d{2}\.\d{4}$/.test(value);
+};
+export { isDate };

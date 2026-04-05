@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 
+import { newsRouter } from './routes/news.routes.js';
+
 // ============================ EXPRESS APP ============================
 export function createApp() {
   const app = express();
@@ -16,6 +18,8 @@ export function createApp() {
       message: 'Backend is running',
     });
   });
+
+  app.use('/api', newsRouter);
 
   return app;
 }

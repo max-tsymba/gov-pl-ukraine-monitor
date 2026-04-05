@@ -1,16 +1,20 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 
 import { getUdscNews } from '../services/news.service.js';
+import { parsePositiveNumber } from '../utils/helper.js';
 
 // ============================ UDSC NEWS router ============================
 
 export const newsRouter = Router();
 
-newsRouter.get('/news', async (_reg, res) => {
+newsRouter.get('/news', async (req: Request, res: Response) => {
   try {
-    const items = await getUdscNews();
+    const page = parsePositiveNumber(req.query.page) ?? 1;
+    const size = parsePositiveNumber(req.query.size) ?? 10;
 
-    res.json(items);
+    const result = await getUdscNews({ page, size });
+
+    res.json(result);
   } catch (error) {
     console.log('Failed to get news: ', error);
 

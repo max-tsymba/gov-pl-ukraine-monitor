@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 
-import { UdscNewsItem } from './udsc.types.js';
+import { ParseUdscNewsListType, UdscNewsItem } from './udsc.types.js';
 
 import GOV_PL_DOMAIN, {
   UDSC_NEWS_DATE_SELECTOR,
@@ -13,7 +13,20 @@ import { buildAbsoluteUrl, normalizeText } from '../utils/helper.js';
 
 // ============================ UDSC NEWS parser ============================
 
-export function parseUdscNewsList(html: string): UdscNewsItem[] {
+// @Parser for NEWS PAGINATION
+function parseTotalPages($: cheerio.CheerioAPI): number {
+  const bodyText = normalizeText($('body').text());
+  const match = bodyText.match(/\b\d+\s+z\s+(\d+)\b/);
+
+  if (!match) return 0;
+
+  const totalPages = Number(match[1]);
+
+  return Number.isFinite(totalPages) ? totalPages : 0;
+}
+
+// @Parser for NEWS LIST
+export function parseUdscNewsList(html: string): ParseUdscNewsListType {
   // ---------------- vars  -----------------
   const $ = cheerio.load(html);
   const results: UdscNewsItem[] = [];
@@ -60,6 +73,12 @@ export function parseUdscNewsList(html: string): UdscNewsItem[] {
     seen.add(url);
   });
 
+  // add total pages
+  const totalPages = parseTotalPages($);
+
   // ---------------- returns  -----------------
-  return results;
+  return {
+    items: [...results],
+    totalPages,
+  };
 }

@@ -6,9 +6,9 @@ import { buildAbsoluteUrl, normalizeText } from '../utils/helper.js';
 
 const GOV_PL_DOMAIN = 'https://www.gov.pl';
 
-// ============================ UDSC NEWS PARSER ============================
+// ============================ UDSC NEWS parser ============================
 
-export function parseUdscNewsList(html: string) {
+export function parseUdscNewsList(html: string): UdscNewsItem[] {
   // ---------------- vars  -----------------
   const $ = cheerio.load(html);
   const results: UdscNewsItem[] = [];

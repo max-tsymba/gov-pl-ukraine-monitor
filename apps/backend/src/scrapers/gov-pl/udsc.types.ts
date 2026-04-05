@@ -1,4 +1,4 @@
-// --------------- News -----------------
+// --------------- news -----------------
 export interface UdscNewsItem {
   date: string | null;
   title: string | null;
